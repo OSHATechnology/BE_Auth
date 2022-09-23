@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\APIFormatter;
-use App\Models\AdminAccess;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,13 +14,15 @@ class AuthController extends Controller
     {
         try {
             $input = $request->validate([
-                'username' => 'required|unique:admin_access,username',
-                'password' => 'required|confirmed',
+                'username' => 'required|unique:users,username',
+                'email' => 'required|unique:users,email',
+                'password' => 'required|confirmed'
             ]);
 
-            $admin_access = AdminAccess::create([
+            $admin_access = User::create([
                 'username' => $input['username'],
-                'password' => Hash::make($input['password']),
+                'email' => $input['email'],
+                'password' => Hash::make($input['password'])
             ]);
 
             $token = $admin_access->createToken('myapptoken')->plainTextToken;
@@ -29,7 +31,7 @@ class AuthController extends Controller
                 'token' => $token
             ];
 
-            $data = AdminAccess::where('id', '=', $admin_access->id)->get();
+            $data = User::where('id', '=', $admin_access->id)->get();
 
             if ($data) {
                 return APIFormatter::createAPI(200, 'Success', [$data, $token_response]);
@@ -41,16 +43,22 @@ class AuthController extends Controller
         }
     }
 
+    public function sendVerification(Request $request)
+    {
+        if ($request->user()->hasVerification) {
+        }
+    }
+
     public function login(Request $request)
     {
         try {
             $input = $request->validate([
-                'username' => 'required',
+                'email' => 'required',
                 'password' => 'required',
             ]);
 
             // Check
-            $admin_access = AdminAccess::where('username', $input['username'])->first();
+            $admin_access = User::where('email', $input['email'])->first();
             if (!($admin_access) || !(Hash::check($input['password'], $admin_access->password))) {
                 return APIFormatter::createAPI(400, 'Failed');
             }
