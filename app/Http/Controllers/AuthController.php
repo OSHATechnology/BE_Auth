@@ -7,6 +7,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -15,8 +16,8 @@ class AuthController extends Controller
         try {
             $input = $request->validate([
                 'username' => 'required|unique:users,username',
-                'email' => 'required|unique:users,email',
-                'password' => 'required|confirmed'
+                'email' => 'required|email|unique:users,email',
+                'password' => ['required', 'confirmed', Password::defaults()]
             ]);
 
             $admin_access = User::create([
