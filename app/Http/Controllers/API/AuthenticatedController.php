@@ -25,6 +25,7 @@ class AuthenticatedController extends BaseController
     {
         try {
             $user = Employee::where('email', $request->email)->orWhere('employeeId', $request->email)->first();
+            // return $this->sendError("user");
             if (!$user) {
                 return $this->sendError('username', $this->username() . ' not found', 401);
             }
